@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgres
+          image: docker.io/bitnami/postgresql:15
+          ports:
+          - containerPort: 5432
+          env:
+          - name: POSTGRESQL_DATABASE
+            value: pds
+          - name: POSTGRESQL_PASSWORD
+            value: pds_test123
+          - name: POSTGRESQL_USERNAME
+            value: pds_multi
+          volumeMounts:
+          - name: postgres-storage
+            mountPath: /bitnami/postgresql
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sechub-pds-multi-server-deployment
+spec:
+  selector:
+    matchLabels:
+      app: sechub-pds-multi-server-deployment
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sechub-pds-multi-server-deployment
+    spec:
+      securityContext:
+        runAsUser: 2323 # user id of the application user. (overrides settings in the Dockerfile)
+        runAsGroup: 2323 # group id of the application group. (overrides setings in the Dockerfile)
+        fsGroup: 2323 # group id of the application group. Set in the Dockerfile. This group has write access to the volumes.
+      containers:
+      - name: sechub-pds-multiserver
+        image: ghcr.io/mercedes-benz/sechub/pds-multi:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            # Initial container memory size
+            memory: 256Mi
+          limits:
+            # Maximum container memory size
+            memory: 1Gi
+        env:
+        - name: PDS_START_MODE
+          value: localserver
+        - name: PDS_MAX_FILE_UPLOAD_BYTES
+          value: "20971520"
+        - name: PDS_CONFIG_EXECUTE_QUEUE_MAX
+          value: "10"
+        - name: PDS_CONFIG_EXECUTE_WORKER_THREAD_COUNT
+          value: "10"
+        - name: PDS_HEARTBEAT_LOGGING
+          value: "true"
+        - name: DEPLOYMENT_COMMENT
+          value: "local pds deployment"
+        - name: LOGGING_TYPE
+          value: "false"
+        - name: PDS_WORKSPACE_AUTOCLEAN_DISABLED
+          value: "true"
+        - name: JAVA_ENABLE_DEBUG
+          value: "false"
+        - name: KEEP_CONTAINER_ALIVE_AFTER_PDS_CRASHED
+          value: "true"
+        - name: POSTGRES_ENABLED
+          value: "true"
+        - name: DATABASE_CONNECTION
+          value: "jdbc:postgresql://database:5432/pds"
+        - name: SPRING_DATASOURCE_HIKARI_MINIMUMIDLE
+          value: "1"
+        - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
+          value: "2"
+        - name: ADMIN_USERID
+          valueFrom: 
+            secretKeyRef:
+              name: app-secret
+              key: ADMIN_USERID
+        - name: ADMIN_APITOKEN
+          valueFrom: 
+            secretKeyRef:
+              name: app-secret
+              key: ADMIN_APITOKEN
+        - name: TECHUSER_USERID
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: TECHUSER_USERID
+        - name: TECHUSER_APITOKEN
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: TECHUSER_APITOKEN
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: psql-secret
+              key: DATABASE_USERNAME
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: psql-secret
+              key: DATABASE_PASSWORD
+        ports:
+        - name: pds-https-port
+          containerPort: 8444

@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sechub-policy
+spec:
+  podSelector:
+    matchLabels:
+      name: sechub
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            name: postgresql
+      - podSelector:
+          matchLabels:
+            name: sechub-pds-multi-server-deployment

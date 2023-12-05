@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-sechub-pds-svc
+spec:
+  selector:
+    app: sechub-pds-multi-server-deployment
+  ports:
+  - protocol: TCP
+    port: 8444
+    targetPort: 8444
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-svc
+spec:
+  selector:
+    app: postgresql
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
