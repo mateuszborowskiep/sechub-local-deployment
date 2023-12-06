@@ -6,8 +6,8 @@ kubectl apply -f deployment.yaml -f networkpolicy.yaml -f secrets.yaml -f servic
 
 # Debugging
 kubectl get pods <br>
-kubectl describe [pod] <br>
-kubectl logs [pod]
+kubectl describe [pod_name] <br>
+kubectl logs [pod_name]
 
 # Clean up 
 kubectl delete -f deployment.yaml -f networkpolicy.yaml -f secrets.yaml -f service.yaml  
