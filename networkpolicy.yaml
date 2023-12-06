@@ -13,4 +13,4 @@ spec:
             name: postgresql
       - podSelector:
           matchLabels:
-            name: sechub-pds-multi-server-deployment
+            name: sechub-server

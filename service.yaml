@@ -4,7 +4,7 @@ metadata:
   name: api-sechub-pds-svc
 spec:
   selector:
-    app: sechub-pds-multi-server-deployment
+    app: sechub-server
   ports:
   - protocol: TCP
     port: 8444

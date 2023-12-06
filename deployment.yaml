@@ -34,24 +34,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sechub-pds-multi-server-deployment
+  name: sechub-server
 spec:
   selector:
     matchLabels:
-      app: sechub-pds-multi-server-deployment
+      app: sechub-server
   replicas: 1
   template:
     metadata:
       labels:
-        app: sechub-pds-multi-server-deployment
+        app: sechub-server
     spec:
       securityContext:
         runAsUser: 2323 # user id of the application user. (overrides settings in the Dockerfile)
         runAsGroup: 2323 # group id of the application group. (overrides setings in the Dockerfile)
         fsGroup: 2323 # group id of the application group. Set in the Dockerfile. This group has write access to the volumes.
       containers:
-      - name: sechub-pds-multiserver
-        image: ghcr.io/mercedes-benz/sechub/pds-multi:latest
+      - name: sechub-server
+        image: ghcr.io/mercedes-benz/sechub/sechub-server:1.3.0_alpine
         imagePullPolicy: Always
         resources:
           requests:
@@ -120,5 +120,24 @@ spec:
               name: psql-secret
               key: DATABASE_PASSWORD
         ports:
-        - name: pds-https-port
+        - name: sechub-https
           containerPort: 8444
+        startupProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /api/anonymous/check/alive
+            port: sechub-https
+          failureThreshold: 24
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /api/anonymous/check/alive
+            port: sechub-https
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
