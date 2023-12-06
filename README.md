@@ -5,9 +5,9 @@ Local deployment of SecHub mercedes security tool with Kubernetes with separate 
 kubectl apply -f deployment.yaml -f networkpolicy.yaml -f secrets.yaml -f service.yaml  
 
 # Debugging
-kubectl get pods 
-kubectl describe <pod>
-kubectl logs <pod>
+kubectl get pods <br>
+kubectl describe [pod] <br>
+kubectl logs [pod]
 
 # Clean up 
 kubectl delete -f deployment.yaml -f networkpolicy.yaml -f secrets.yaml -f service.yaml  
